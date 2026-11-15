@@ -1,0 +1,2007 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ludo Battle Arena</title>
+  <style>
+    :root {
+      --bg-page: #090b0e;
+      --bg-shell: #101318;
+      --bg-card: #171b22;
+      --bg-card-2: #1d222c;
+      --gold-1: #ffe07d;
+      --gold-2: #e2aa2d;
+      --gold-3: #9b6d11;
+      --border-gold: rgba(232, 182, 58, 0.45);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-muted: #9aa4b2;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top, #1d190e 0%, var(--bg-page) 55%);
+      color: var(--text-main);
+      padding-bottom: 84px;
+    }
+
+    .shell {
+      position: relative;
+      max-width: 450px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--bg-shell);
+      border-left: 1px solid var(--border-subtle);
+      border-right: 1px solid var(--border-subtle);
+      padding: 12px;
+      overflow-x: hidden;
+    }
+
+    /* Top Header */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(180deg, rgba(26, 30, 39, 0.98), rgba(18, 21, 28, 0.98));
+      border: 1px solid var(--border-gold);
+      border-radius: 14px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    }
+
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .hamburger-btn {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+      margin: 0;
+      padding: 0;
+      border-radius: 10px;
+      background: #1a1f29;
+      border: 1px solid rgba(232, 182, 58, 0.35);
+      color: var(--gold-1);
+      font-size: 18px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* Crown Theme over K Logo */
+    .logo-k {
+      position: relative;
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+      border-radius: 10px;
+      background: linear-gradient(145deg, var(--gold-1), var(--gold-2), var(--gold-3));
+      color: #121212;
+      font-weight: 900;
+      font-size: 19px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 5px;
+      box-shadow: 0 2px 12px rgba(226, 170, 45, 0.35);
+    }
+
+    .logo-crown {
+      position: absolute;
+      top: -9px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 13px;
+      line-height: 1;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.65));
+      pointer-events: none;
+    }
+
+    .user-meta {
+      overflow: hidden;
+    }
+
+    .user-title {
+      font-weight: 700;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .bal-group {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .bal-pill {
+      background: linear-gradient(145deg, #282112, #18140b);
+      border: 1px solid var(--gold-2);
+      color: var(--gold-1);
+      padding: 6px 8px;
+      border-radius: 9px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .bal-pill:hover {
+      box-shadow: 0 0 12px rgba(226, 170, 45, 0.3);
+    }
+
+    .bal-pill:active {
+      transform: scale(0.97);
+    }
+
+    /* Slide-Out Left Drawer */
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      z-index: 40;
+    }
+
+    .side-drawer {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-225px);
+      width: 315px;
+      max-width: 84vw;
+      height: 100vh;
+      background: linear-gradient(180deg, #171a21, #0f1217);
+      border-right: 1px solid var(--border-gold);
+      z-index: 50;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow-y: auto;
+      box-shadow: 8px 0 30px rgba(0, 0, 0, 0.75);
+    }
+
+    @media (max-width: 450px) {
+      .side-drawer {
+        left: 0;
+        transform: translateX(0);
+      }
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 10px;
+    }
+
+    .close-btn {
+      width: 36px;
+      height: 36px;
+      margin: 0;
+      padding: 0;
+      border-radius: 10px;
+      background: #1d222c;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #f8fafc;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .drawer-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      margin: 4px 0;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: #f1f5f9;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.12s ease, border-color 0.12s ease;
+    }
+
+    .drawer-item:hover {
+      background: rgba(226, 170, 45, 0.1);
+      border-color: rgba(226, 170, 45, 0.35);
+      color: var(--gold-1);
+    }
+
+    .drawer-icon {
+      width: 34px;
+      height: 34px;
+      flex-shrink: 0;
+      border-radius: 9px;
+      background: #1b202b;
+      border: 1px solid rgba(232, 182, 58, 0.35);
+      color: var(--gold-1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .drawer-logout {
+      margin-top: 12px;
+      padding: 11px 12px;
+      border-radius: 12px;
+      background: rgba(127, 29, 29, 0.25);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      color: #fca5a5;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    /* Cards & Banners */
+    .card {
+      background: linear-gradient(165deg, var(--bg-card), #12151b);
+      border: 1px solid var(--border-gold);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    .notice {
+      background: linear-gradient(90deg, rgba(120, 82, 12, 0.28), rgba(33, 27, 13, 0.85));
+      border: 1px solid rgba(245, 197, 66, 0.45);
+      color: #fde68a;
+      font-size: 12px;
+      line-height: 1.45;
+      padding: 11px 13px;
+      border-radius: 14px;
+      margin-bottom: 12px;
+    }
+
+    .section-tag {
+      font-size: 11px;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: var(--gold-2);
+      font-weight: 700;
+    }
+
+    .section-heading {
+      margin: 3px 0 2px;
+      font-size: 18px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .muted {
+      color: var(--text-muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    /* Profile Card */
+    .profile-hero {
+      text-align: center;
+      background: linear-gradient(170deg, #1d190e, #141820);
+      border: 1px solid rgba(232, 182, 58, 0.55);
+      border-radius: 18px;
+      padding: 20px 14px;
+      margin-bottom: 12px;
+    }
+
+    .big-avatar {
+      width: 68px;
+      height: 68px;
+      margin: 0 auto 10px;
+      border-radius: 50%;
+      background: #141821;
+      border: 2px solid var(--gold-2);
+      color: var(--gold-1);
+      font-size: 24px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(226, 170, 45, 0.25);
+    }
+
+    .kyc-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      background: #171b23;
+      border: 1px solid rgba(232, 182, 58, 0.45);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+
+    .stats-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .stat-box {
+      text-align: center;
+      background: #171b23;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 13px;
+      padding: 11px 6px;
+    }
+
+    .quick-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .quick-tile {
+      background: #171b23;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 13px;
+      padding: 13px 12px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    /* Ludo Mode Cards */
+    .modes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 11px;
+      margin-top: 12px;
+    }
+
+    .mode-card {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 85% 20%, rgba(239, 68, 68, 0.14), transparent 45%),
+        radial-gradient(circle at 15% 85%, rgba(34, 197, 94, 0.14), transparent 45%),
+        linear-gradient(175deg, #232937, #131720);
+      border: 1px solid var(--border-gold);
+      border-radius: 15px;
+      padding: 12px;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .mode-card:hover:not(.locked) {
+      transform: translateY(-2px);
+      border-color: var(--gold-1);
+      box-shadow: 0 8px 20px rgba(226, 170, 45, 0.18);
+    }
+
+    .mode-card.locked {
+      background:
+        radial-gradient(circle at 85% 20%, rgba(250, 204, 21, 0.12), transparent 45%),
+        linear-gradient(175deg, #1d222d, #12151d);
+      opacity: 0.85;
+      border-color: rgba(148, 163, 184, 0.35);
+      cursor: not-allowed;
+    }
+
+    .mode-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+
+    .live {
+      background: linear-gradient(145deg, #16a34a, #14532d);
+      color: #dcfce7;
+      border: 1px solid rgba(134, 239, 172, 0.65);
+      animation: livePop 1.35s ease-in-out infinite;
+    }
+
+    @keyframes livePop {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.65);
+      }
+      50% {
+        transform: scale(1.13);
+        box-shadow: 0 0 14px 3px rgba(74, 222, 128, 0.45);
+      }
+    }
+
+    .soon {
+      background: rgba(120, 53, 15, 0.78);
+      color: #fcd34d;
+      border: 1px solid rgba(251, 191, 36, 0.38);
+    }
+
+    .ludo-emblem {
+      width: 44px;
+      height: 44px;
+      border-radius: 11px;
+      background: #0e1117;
+      border: 1px solid rgba(255, 224, 125, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .mode-title {
+      font-weight: 800;
+      font-size: 13.5px;
+      color: var(--gold-1);
+      letter-spacing: 0.2px;
+    }
+
+    .mode-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* Refer Box */
+    .refer-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, #212530, #161922);
+      border: 1px solid var(--border-gold);
+      border-radius: 14px;
+      padding: 13px 14px;
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+
+    /* Inputs & Buttons */
+    input, select, button {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 10px;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    input, select {
+      background: #0d1015;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--gold-2);
+    }
+
+    button.gold {
+      background: linear-gradient(145deg, var(--gold-1), var(--gold-2), #c58918);
+      color: #111318;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(226, 170, 45, 0.25);
+    }
+
+    button.gold:active {
+      transform: scale(0.99);
+    }
+
+    button.dark {
+      background: #232936;
+      color: #f1f5f9;
+      font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      cursor: pointer;
+    }
+
+    /* Reference-Style Battle Card */
+    .battle-card {
+      background: linear-gradient(160deg, #1d222d, #141820);
+      border: 1px solid rgba(226, 170, 45, 0.55);
+      border-radius: 14px;
+      padding: 13px;
+      margin-top: 11px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    }
+
+    .battle-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .player-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .avatar-circle {
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #2b3242, #171b24);
+      border: 1.5px solid var(--gold-2);
+      color: var(--gold-1);
+      font-weight: 800;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .player-name {
+      font-weight: 700;
+      font-size: 14px;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .challenge-sub {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: var(--gold-2);
+      margin-top: 2px;
+    }
+
+    .stakes-block {
+      display: flex;
+      gap: 14px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .stake-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+
+    .stake-val {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--gold-1);
+      margin-top: 2px;
+    }
+
+    .battle-action {
+      margin-top: 11px;
+    }
+
+    /* Support / Help Styles */
+    .support-hero {
+      background: linear-gradient(165deg, #211c10, #14171f);
+      border: 1px solid rgba(232, 182, 58, 0.5);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .help-chip {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.7px;
+      color: var(--gold-1);
+      background: rgba(226, 170, 45, 0.14);
+      border: 1px solid rgba(226, 170, 45, 0.45);
+      border-radius: 999px;
+      padding: 4px 10px;
+      margin-bottom: 10px;
+    }
+
+    .support-title {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      color: #ffffff;
+    }
+
+    .support-sub {
+      color: #cbd5e1;
+      font-size: 13px;
+      line-height: 1.45;
+      margin: 6px 0 12px;
+    }
+
+    .trust-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .trust-pill {
+      font-size: 11px;
+      font-weight: 700;
+      color: #e2e8f0;
+      background: rgba(15, 18, 24, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      padding: 5px 10px;
+    }
+
+    .channel-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(160deg, #1b1f29, #12151d);
+      border: 1px solid rgba(232, 182, 58, 0.35);
+      border-radius: 14px;
+      padding: 13px;
+      margin-top: 9px;
+      cursor: pointer;
+    }
+
+    .channel-left {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .channel-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: #0d1016;
+      border: 1px solid rgba(232, 182, 58, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: var(--gold-1);
+      font-weight: 800;
+    }
+
+    .channel-status-off {
+      background: #232834;
+      color: #cbd5e1;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      padding: 6px 11px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .channel-status-on {
+      background: linear-gradient(145deg, var(--gold-1), var(--gold-2));
+      color: #111318;
+      padding: 6px 12px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .best-tag {
+      background: var(--gold-2);
+      color: #111318;
+      font-size: 9px;
+      font-weight: 900;
+      padding: 2px 6px;
+      border-radius: 5px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      font-size: 13px;
+    }
+
+    .toggle-row input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      transform: scale(1.25);
+      cursor: pointer;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 450px;
+      background: rgba(16, 19, 25, 0.98);
+      border-top: 1px solid var(--border-gold);
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      z-index: 25;
+    }
+
+    .bottom-nav button {
+      margin: 0;
+      padding: 10px 2px;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      color: #8f99a8;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .bottom-nav button.active {
+      color: var(--gold-1);
+      background: rgba(226, 170, 45, 0.12);
+      box-shadow: inset 0 2px 0 var(--gold-2);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    img.preview {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-top: 8px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .tx-item {
+      font-size: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+<!-- Drawer Backdrop & Slide-Out Menu -->
+<div id="drawerBackdrop" class="drawer-backdrop hidden" onclick="closeDrawer()"></div>
+<aside id="sideDrawer" class="side-drawer hidden" aria-label="Navigation Menu">
+  <div>
+    <div class="drawer-header">
+      <div class="brand-left">
+        <div class="logo-k"><span class="logo-crown">👑</span>K</div>
+        <div class="user-meta">
+          <div id="drawerName" class="user-title">Menu</div>
+          <div id="drawerPhone" class="user-sub"></div>
+        </div>
+      </div>
+      <button class="close-btn" onclick="closeDrawer()" aria-label="Close Menu">✕</button>
+    </div>
+
+    <button class="drawer-item" onclick="drawerNavigate('home')">
+      <span class="drawer-icon">🎲</span>
+      <span>Home</span>
+    </button>
+
+    <button class="drawer-item" onclick="drawerNavigate('me')">
+      <span class="drawer-icon">👤</span>
+      <span>My Profile</span>
+    </button>
+
+    <button class="drawer-item" onclick="drawerNavigate('wallet')">
+      <span class="drawer-icon">💳</span>
+      <span>My Wallet</span>
+    </button>
+
+    <button class="drawer-item" onclick="drawerNavigate('refer')">
+      <span class="drawer-icon">🔗</span>
+      <span>Refer &amp; Earn</span>
+    </button>
+
+    <button class="drawer-item" onclick="drawerNavigate('history')">
+      <span class="drawer-icon">↺</span>
+      <span>History</span>
+    </button>
+
+    <button class="drawer-item" onclick="drawerNavigate('notifications')">
+      <span class="drawer-icon">🔔</span>
+      <span>Notifications</span>
+    </button>
+
+    <button class="drawer-item" onclick="drawerNavigate('help')">
+      <span class="drawer-icon">💬</span>
+      <span>Support</span>
+    </button>
+
+    <button class="drawer-item" onclick="installAppAction()">
+      <span class="drawer-icon">⬇</span>
+      <span>Install App</span>
+    </button>
+  </div>
+
+  <div class="drawer-logout" onclick="drawerLogout()">
+    <span>⇥</span>
+    <span>Logout</span>
+  </div>
+</aside>
+
+<div class="shell">
+  <!-- Login Card -->
+  <div id="loginView" class="card">
+    <div class="brand-left" style="margin-bottom:12px;">
+      <div class="logo-k"><span class="logo-crown">👑</span>K</div>
+      <div class="user-meta">
+        <div style="font-weight:800;color:var(--gold-1);font-size:15px;">SIM OTP Login</div>
+        <div class="user-sub">Apni purani ID aur balance waise hi continue honge</div>
+      </div>
+    </div>
+    <input id="phoneInput" placeholder="Mobile number daalein" />
+    <button class="gold" onclick="sendOtp()">Send OTP</button>
+    <div id="demoOtpHint" class="muted" style="margin-top:6px;color:var(--gold-1);"></div>
+    <input id="otpInput" placeholder="6-digit OTP daalein" />
+    <input id="nameInput" placeholder="Naam (naya user ho toh)" />
+    <button class="gold" onclick="verifyOtp()">Verify &amp; Enter</button>
+  </div>
+
+  <!-- Main App -->
+  <div id="appView" class="hidden">
+    <div class="topbar">
+      <div class="brand-left">
+        <button class="hamburger-btn" onclick="openDrawer()" aria-label="Open Menu">☰</button>
+        <div class="logo-k"><span class="logo-crown">👑</span>K</div>
+        <div class="user-meta">
+          <div id="topName" class="user-title"></div>
+          <div id="topId" class="user-sub"></div>
+        </div>
+      </div>
+      <div class="bal-group" title="Payment / Wallet kholne ke liye click karein">
+        <div class="bal-pill" onclick="openWalletTab()">₹<span id="topWallet">0</span></div>
+        <div class="bal-pill" onclick="openWalletTab()">₹<span id="topBonus">0</span></div>
+      </div>
+    </div>
+
+    <div class="notice" id="noticeBox"></div>
+
+    <!-- HOME -->
+    <div id="tab-home">
+      <div class="card">
+        <div class="section-tag">GAMES</div>
+        <div class="muted">Choose a mode</div>
+        <div class="modes-grid" id="modesGrid"></div>
+      </div>
+
+      <div class="refer-box" onclick="goTab('refer')">
+        <div>
+          <div class="section-tag">REFER &amp; EARN</div>
+          <div id="referText" style="font-weight:800;color:var(--gold-1);font-size:13px;margin-top:2px;"></div>
+        </div>
+        <div style="color:var(--gold-1);font-weight:900;font-size:16px;">&gt;</div>
+      </div>
+    </div>
+
+    <!-- BATTLE LOBBY -->
+    <div id="tab-lobby" class="hidden">
+      <div class="card">
+        <div class="section-tag">BATTLE LOBBY</div>
+        <div class="section-heading">CREATE BATTLE</div>
+        <div class="muted">Set amount and jump into a quick match.</div>
+        <input id="entryAmountInput" type="number" placeholder="₹ ENTER AMOUNT" />
+        <button class="gold" onclick="createBattle()">SET</button>
+      </div>
+
+      <div class="card">
+        <div class="section-heading">OPEN BATTLES</div>
+        <div class="muted">Join fresh battles ya apni table lagayein.</div>
+        <div id="openBattlesContainer"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-heading" style="font-size:16px;">MY ACTIVE / RESULT MATCHES</div>
+        <div id="myMatchesContainer"></div>
+      </div>
+    </div>
+
+    <!-- WALLET / PAYMENT -->
+    <div id="tab-wallet" class="hidden">
+      <div class="card">
+        <div class="section-tag">WALLET &amp; PAYMENT</div>
+        <div class="section-heading">Add Payment (Deposit)</div>
+        <input id="depositAmountInput" type="number" placeholder="Amount daalein" />
+        <select id="depositMethodInput">
+          <option value="UPI">UPI</option>
+          <option value="Card">Card</option>
+          <option value="NetBanking">NetBanking</option>
+        </select>
+        <button class="gold" onclick="depositMoney()">Add Money</button>
+
+        <div id="depositKycBox" class="hidden" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border-subtle);">
+          <div style="font-size:13px;color:var(--gold-1);font-weight:800;">One-Time KYC Verification (Deposit)</div>
+          <div id="kycStateMsg" class="muted"></div>
+          <input id="kycNameInput" placeholder="KYC ke mutabik apna naam" />
+          <input type="file" accept="image/*" onchange="onKycFile(event)" />
+          <img id="kycPreview" class="preview hidden" />
+          <button class="gold" onclick="submitKyc()">Submit KYC for Admin Approval</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-heading" style="font-size:16px;">Withdrawal</div>
+        <input id="withdrawAmountInput" type="number" placeholder="Withdrawal amount" />
+        <input id="payoutDetailsInput" placeholder="UPI / Bank details" />
+        <button class="dark" onclick="withdrawMoney()">Request Withdrawal</button>
+      </div>
+
+      <div class="card">
+        <div class="section-heading" style="font-size:16px;">Transactions</div>
+        <div id="txContainer"></div>
+      </div>
+    </div>
+
+    <!-- REFER -->
+    <div id="tab-refer" class="hidden">
+      <div class="card">
+        <div class="section-heading">REFER &amp; EARN</div>
+        <p id="referDetailText" class="muted"></p>
+        <div class="bal-pill" id="myReferralCode" style="display:inline-block;margin-top:6px;"></div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div id="tab-history" class="hidden">
+      <div class="card">
+        <div class="section-tag">ACTIVITY LOG</div>
+        <div class="section-heading">Match &amp; Wallet History</div>
+        <div id="historyMatchesBox" style="margin-top:8px;"></div>
+        <div id="historyTxBox" style="margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div id="tab-notifications" class="hidden">
+      <div class="card">
+        <div class="section-tag">ALERTS</div>
+        <div class="section-heading">Notifications</div>
+        <div id="notificationsList" style="margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <!-- HELP / SUPPORT -->
+    <div id="tab-help" class="hidden">
+      <div class="support-hero">
+        <div class="help-chip">🎧 HELP CENTER</div>
+        <h2 class="support-title">SUPPORT</h2>
+        <div class="support-sub">Fast help for your account — pick a channel below.</div>
+        <div class="trust-row">
+          <span class="trust-pill">⚡ 1–2 min reply</span>
+          <span class="trust-pill">🛡 Secure</span>
+          <span class="trust-pill">🕒 24×7</span>
+        </div>
+      </div>
+
+      <div class="section-tag" style="margin-left:2px;">CHANNELS</div>
+
+      <div class="channel-card" onclick="handleChannelClick('whatsapp')">
+        <div class="channel-left">
+          <div class="channel-icon">💬</div>
+          <div>
+            <div style="font-weight:800;font-size:15px;">WhatsApp</div>
+            <div class="muted">Chat on WhatsApp</div>
+          </div>
+        </div>
+        <div id="waBadge" class="channel-status-off">Off &gt;</div>
+      </div>
+
+      <div class="channel-card" onclick="handleChannelClick('telegram')">
+        <div class="channel-left">
+          <div class="channel-icon">✈</div>
+          <div>
+            <div style="font-weight:800;font-size:15px;">Telegram</div>
+            <div class="muted">Official channel</div>
+          </div>
+        </div>
+        <div id="tgBadge" class="channel-status-off">Off &gt;</div>
+      </div>
+
+      <div class="channel-card" onclick="handleChannelClick('livechat')">
+        <div class="channel-left">
+          <div class="channel-icon">🎧</div>
+          <div>
+            <div style="font-weight:800;font-size:15px;">Live Chat <span class="best-tag">BEST</span></div>
+            <div class="muted">In-app support desk</div>
+          </div>
+        </div>
+        <div id="lcBadge" class="channel-status-on">Open Chat &gt;</div>
+      </div>
+
+      <div id="liveChatBox" class="card hidden" style="margin-top:12px;">
+        <div class="section-heading" style="font-size:16px;">Live Chat Desk</div>
+        <input id="supportMsgInput" placeholder="Apni problem ya query likhein..." />
+        <button class="gold" onclick="sendSupportMessage()">Send Message</button>
+        <div id="supportChatList" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <!-- ME / PROFILE -->
+    <div id="tab-me" class="hidden">
+      <div class="profile-hero">
+        <div id="meAvatar" class="big-avatar">U</div>
+        <div id="meName" style="font-size:20px;font-weight:900;color:#ffffff;"></div>
+        <div id="mePhone" class="muted" style="margin-top:4px;"></div>
+        <div id="meIdLine" class="muted" style="margin-top:2px;"></div>
+        <button class="dark" style="width:auto;padding:8px 18px;margin-top:12px;border-radius:999px;" onclick="toggleEditProfile()">✎ Edit profile</button>
+
+        <div id="editProfileBox" class="hidden" style="margin-top:12px;text-align:left;">
+          <input id="editNameInput" placeholder="Naya naam likhein" />
+          <button class="gold" onclick="saveProfileName()">Save Name</button>
+        </div>
+      </div>
+
+      <div class="kyc-banner" onclick="openWalletTab()">
+        <div>
+          <div style="font-weight:800;font-size:14px;">Secure your account</div>
+          <div id="meKycSub" class="muted">KYC Status: not_submitted</div>
+        </div>
+        <div class="bal-pill" style="margin:0;">KYC &gt;</div>
+      </div>
+
+      <div class="stats-grid-3">
+        <div class="stat-box">
+          <div class="stake-label">WON</div>
+          <div id="statWon" class="stake-val">₹0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stake-label">GAMES</div>
+          <div id="statGames" class="stake-val">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stake-label">REFS</div>
+          <div id="statRefs" class="stake-val">0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-tag">⚡ QUICK ACTIONS</div>
+        <div class="quick-grid-2">
+          <div class="quick-tile" onclick="goTab('history')">↺ History</div>
+          <div class="quick-tile" onclick="goTab('help')">🎧 Support</div>
+        </div>
+        <button class="dark" style="margin-top:12px;" onclick="logoutUser()">Logout</button>
+      </div>
+    </div>
+
+    <!-- ADMIN (Protected by ID & Password) -->
+    <div id="tab-admin" class="hidden">
+      <div id="adminLoginCard" class="card">
+        <div class="section-tag">RESTRICTED ACCESS</div>
+        <div class="section-heading">Admin Login</div>
+        <div class="muted">Admin panel sirf authorized ID aur Password se khulega.</div>
+        <input id="adminIdInput" placeholder="Admin ID" />
+        <input id="adminPassInput" type="password" placeholder="Admin Password" />
+        <button class="gold" onclick="adminLogin()">Unlock Admin Panel</button>
+      </div>
+
+      <div id="adminPanelContent" class="hidden">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="section-heading" style="font-size:16px;">Help Channels ON / OFF</div>
+            <button class="dark" style="width:auto;padding:6px 10px;margin:0;font-size:11px;" onclick="adminLogout()">Lock</button>
+          </div>
+          <div class="toggle-row">
+            <span>WhatsApp Help</span>
+            <input type="checkbox" id="admWaToggle" />
+          </div>
+          <input id="admWaUrl" placeholder="WhatsApp URL (e.g. https://wa.me/91...)" />
+
+          <div class="toggle-row">
+            <span>Telegram Help</span>
+            <input type="checkbox" id="admTgToggle" />
+          </div>
+          <input id="admTgUrl" placeholder="Telegram URL (e.g. https://t.me/...)" />
+
+          <div class="toggle-row">
+            <span>Live Chat Desk</span>
+            <input type="checkbox" id="admLcToggle" />
+          </div>
+
+          <button class="gold" onclick="saveSupportSettings()">Save Help Settings</button>
+        </div>
+
+        <div class="card">
+          <div class="section-heading" style="font-size:16px;">User Support Chats (Reply)</div>
+          <div id="adminSupportChats"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-heading" style="font-size:16px;">Admin Settings</div>
+          <input id="cfgNoticeInput" placeholder="Notice banner update" />
+          <input id="cfgCommissionInput" type="number" step="0.01" placeholder="Commission rate (e.g. 0.05)" />
+          <select id="cfgModeId">
+            <option value="ludo-classic">LUDO CLASSIC</option>
+            <option value="1-goti-ludo">1 GOTI LUDO</option>
+          </select>
+          <select id="cfgModeStatus">
+            <option value="live">live</option>
+            <option value="coming_soon">coming_soon</option>
+          </select>
+          <button class="gold" onclick="updateAdminConfig()">Save Settings</button>
+        </div>
+
+        <div class="card">
+          <div class="section-heading" style="font-size:16px;">Pending KYC Documents</div>
+          <div id="adminKycContainer"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-heading" style="font-size:16px;">Pending Match Results (Confirm to Update)</div>
+          <div id="adminResultsContainer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-nav hidden" id="bottomNav">
+  <button id="nav-home" class="active" onclick="goTab('home', this)">HOME</button>
+  <button id="nav-wallet" onclick="goTab('wallet', this)">WALLET</button>
+  <button id="nav-refer" onclick="goTab('refer', this)">REFER</button>
+  <button id="nav-help" onclick="goTab('help', this)">HELP</button>
+  <button id="nav-me" onclick="goTab('me', this)">ME</button>
+  <button id="nav-admin" onclick="goTab('admin', this)">ADMIN</button>
+</div>
+
+<script>
+  const API = "/api";
+  const POLL_INTERVAL_MS = 4000;
+  let currentUser = null;
+  let state = null;
+  let adminToken = sessionStorage.getItem("kp_admin_token") || "";
+  let deferredInstallPrompt = null;
+  let kycBase64 = "";
+  let resultBase64 = "";
+  let chosenOutcome = "win";
+  let pollTimer = null;
+  let isSyncing = false;
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+  });
+
+  function isUserTypingInApp() {
+    const active = document.activeElement;
+    if (!active) return false;
+    const tag = active.tagName;
+    if (tag !== "INPUT" && tag !== "SELECT" && tag !== "TEXTAREA") return false;
+    if (active.type === "checkbox" || active.type === "file") return false;
+    const appView = document.getElementById("appView");
+    return Boolean(appView && !appView.classList.contains("hidden") && appView.contains(active));
+  }
+
+  function startPolling() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(() => {
+      if (document.hidden) return;
+      if (isUserTypingInApp()) return;
+      syncState();
+    }, POLL_INTERVAL_MS);
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && currentUser && !isUserTypingInApp()) {
+      syncState();
+    }
+  });
+
+  function openDrawer() {
+    document.getElementById("drawerBackdrop").classList.remove("hidden");
+    document.getElementById("sideDrawer").classList.remove("hidden");
+  }
+
+  function closeDrawer() {
+    document.getElementById("drawerBackdrop").classList.add("hidden");
+    document.getElementById("sideDrawer").classList.add("hidden");
+  }
+
+  function drawerNavigate(tab) {
+    closeDrawer();
+    goTab(tab, document.getElementById("nav-" + tab));
+  }
+
+  function drawerLogout() {
+    closeDrawer();
+    logoutUser();
+  }
+
+  async function installAppAction() {
+    closeDrawer();
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+    } else {
+      alert("Browser menu (⋮) mein 'Add to Home screen' ya 'Install app' chunein.");
+    }
+  }
+
+  function goTab(tab, btn) {
+    ["home", "lobby", "wallet", "refer", "history", "notifications", "help", "me", "admin"].forEach((t) => {
+      document.getElementById("tab-" + t).classList.add("hidden");
+    });
+    document.getElementById("tab-" + tab).classList.remove("hidden");
+    document.querySelectorAll(".bottom-nav button").forEach((b) => b.classList.remove("active"));
+    const targetBtn = btn || document.getElementById("nav-" + tab);
+    if (targetBtn) targetBtn.classList.add("active");
+    syncState();
+  }
+
+  function openWalletTab() {
+    goTab("wallet", document.getElementById("nav-wallet"));
+  }
+
+  function getInitials(name) {
+    const parts = String(name || "P").trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  function getModeArt(modeId) {
+    if (modeId === "1-goti-ludo") {
+      return `
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <rect x="3" y="3" width="22" height="22" rx="6" fill="#181d28" stroke="#facc15" stroke-width="1.5"/>
+          <circle cx="14" cy="11" r="4.2" fill="#ef4444"/>
+          <path d="M9.2 19.5C9.2 16.9 11.3 15.2 14 15.2C16.7 15.2 18.8 16.9 18.8 19.5V21H9.2V19.5Z" fill="#f59e0b"/>
+        </svg>
+      `;
+    }
+    return `
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+        <rect x="3" y="3" width="10" height="10" rx="2.2" fill="#ef4444"/>
+        <rect x="15" y="3" width="10" height="10" rx="2.2" fill="#eab308"/>
+        <rect x="3" y="15" width="10" height="10" rx="2.2" fill="#22c55e"/>
+        <rect x="15" y="15" width="10" height="10" rx="2.2" fill="#3b82f6"/>
+        <rect x="11" y="11" width="6" height="6" rx="1.5" fill="#fffbeb"/>
+      </svg>
+    `;
+  }
+
+  function toggleEditProfile() {
+    const box = document.getElementById("editProfileBox");
+    box.classList.toggle("hidden");
+    if (!box.classList.contains("hidden") && currentUser) {
+      document.getElementById("editNameInput").value = currentUser.name;
+    }
+  }
+
+  async function saveProfileName() {
+    const name = document.getElementById("editNameInput").value.trim();
+    const res = await fetch(`${API}/profile/update`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: currentUser.id, name })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    currentUser = data.user;
+    document.getElementById("editProfileBox").classList.add("hidden");
+    await syncState();
+  }
+
+  async function adminLogin() {
+    const adminId = document.getElementById("adminIdInput").value.trim();
+    const password = document.getElementById("adminPassInput").value;
+    const res = await fetch(`${API}/admin/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ adminId, password })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    adminToken = data.token;
+    sessionStorage.setItem("kp_admin_token", adminToken);
+    document.getElementById("adminPassInput").value = "";
+    await syncState();
+  }
+
+  async function adminLogout() {
+    if (adminToken) {
+      await fetch(`${API}/admin/logout`, {
+        method: "POST",
+        headers: { "x-admin-token": adminToken }
+      }).catch(() => {});
+    }
+    adminToken = "";
+    sessionStorage.removeItem("kp_admin_token");
+    await syncState();
+  }
+
+  function adminHeaders() {
+    return {
+      "Content-Type": "application/json",
+      "x-admin-token": adminToken
+    };
+  }
+
+  async function sendOtp() {
+    const phone = document.getElementById("phoneInput").value.trim();
+    const res = await fetch(`${API}/auth/send-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    document.getElementById("demoOtpHint").textContent = data.demoOtp
+      ? `Demo OTP: ${data.demoOtp}`
+      : data.message;
+  }
+
+  async function verifyOtp() {
+    const phone = document.getElementById("phoneInput").value.trim();
+    const otp = document.getElementById("otpInput").value.trim();
+    const name = document.getElementById("nameInput").value.trim();
+
+    const res = await fetch(`${API}/auth/verify-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone, otp, name })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+
+    currentUser = data.user;
+    localStorage.setItem("kp_user_id", currentUser.id);
+    document.getElementById("loginView").classList.add("hidden");
+    document.getElementById("appView").classList.remove("hidden");
+    document.getElementById("bottomNav").classList.remove("hidden");
+    await syncState();
+  }
+
+  function logoutUser() {
+    localStorage.removeItem("kp_user_id");
+    currentUser = null;
+    document.getElementById("appView").classList.add("hidden");
+    document.getElementById("bottomNav").classList.add("hidden");
+    document.getElementById("loginView").classList.remove("hidden");
+  }
+
+  async function syncState() {
+    if (isSyncing) return;
+    isSyncing = true;
+    try {
+      const res = await fetch(`${API}/state`, { cache: "no-store" });
+      state = await res.json();
+      const savedId = localStorage.getItem("kp_user_id");
+      if (savedId) {
+        const found = state.users.find((u) => u.id === savedId);
+        if (found) {
+          currentUser = found;
+          document.getElementById("loginView").classList.add("hidden");
+          document.getElementById("appView").classList.remove("hidden");
+          document.getElementById("bottomNav").classList.remove("hidden");
+        }
+      }
+      if (!currentUser) return;
+
+      document.getElementById("topName").textContent = currentUser.name;
+      document.getElementById("topId").textContent = "ID: " + currentUser.id;
+      document.getElementById("drawerName").textContent = currentUser.name;
+      document.getElementById("drawerPhone").textContent = currentUser.phone;
+      document.getElementById("topWallet").textContent = currentUser.walletBalance;
+      document.getElementById("topBonus").textContent = currentUser.bonusBalance;
+      document.getElementById("noticeBox").textContent = "⚠ " + state.config.notice;
+      document.getElementById("referText").textContent = state.config.referralText;
+      document.getElementById("referDetailText").textContent = state.config.referralText;
+      document.getElementById("myReferralCode").textContent = "Referral ID: " + currentUser.id;
+
+      const txs = currentUser.transactions || [];
+      const wonSum = txs
+        .filter((t) => t.type === "battle_win")
+        .reduce((acc, t) => acc + Number(t.amount || 0), 0);
+      const myBattles = (state.battles || []).filter(
+        (b) => b.creatorId === currentUser.id || b.opponentId === currentUser.id
+      );
+
+      document.getElementById("meAvatar").textContent = getInitials(currentUser.name);
+      document.getElementById("meName").textContent = currentUser.name;
+      document.getElementById("mePhone").textContent = currentUser.phone;
+      document.getElementById("meIdLine").textContent = "ID · " + currentUser.id;
+      document.getElementById("meKycSub").textContent =
+        "KYC Status: " + (currentUser.kyc?.status || "not_submitted");
+      document.getElementById("statWon").textContent = "₹" + wonSum;
+      document.getElementById("statGames").textContent = myBattles.length;
+      document.getElementById("statRefs").textContent = 0;
+
+      renderModes();
+      renderLobby();
+      renderWallet();
+      renderHistory();
+      renderNotifications();
+      renderHelp();
+      renderAdmin();
+    } catch (_) {
+      // Network hiccup during background polling is ignored until next interval
+    } finally {
+      isSyncing = false;
+    }
+  }
+
+  function renderHistory() {
+    const matchesBox = document.getElementById("historyMatchesBox");
+    const txBox = document.getElementById("historyTxBox");
+    const myBattles = (state.battles || []).filter(
+      (b) => b.creatorId === currentUser.id || b.opponentId === currentUser.id
+    );
+
+    matchesBox.innerHTML = `<div class="section-tag">MATCH HISTORY</div>`;
+    if (!myBattles.length) {
+      matchesBox.innerHTML += `<div class="muted" style="margin-top:6px;">Abhi koi match record nahi hai.</div>`;
+    } else {
+      myBattles.forEach((m) => {
+        matchesBox.innerHTML += `
+          <div class="tx-item">
+            <span><strong>${m.creatorName} vs ${m.opponentName || "Open"}</strong> (${m.status})</span>
+            <span style="color:var(--gold-1);font-weight:700;">₹${m.prize}</span>
+          </div>
+        `;
+      });
+    }
+
+    txBox.innerHTML = `<div class="section-tag">WALLET TRANSACTIONS</div>`;
+    const txs = currentUser.transactions || [];
+    if (!txs.length) {
+      txBox.innerHTML += `<div class="muted" style="margin-top:6px;">Abhi koi transaction nahi hai.</div>`;
+    } else {
+      txs.forEach((t) => {
+        txBox.innerHTML += `
+          <div class="tx-item">
+            <span><strong>${t.type}</strong> (${t.status})</span>
+            <span style="color:var(--gold-1);font-weight:700;">₹${t.amount}</span>
+          </div>
+        `;
+      });
+    }
+  }
+
+  function renderNotifications() {
+    const box = document.getElementById("notificationsList");
+    const items = [state.config.notice];
+    if (currentUser.kyc?.status) {
+      items.push(`Aapka KYC status: ${currentUser.kyc.status}`);
+    }
+    (state.supportChats || [])
+      .filter((c) => c.userId === currentUser.id && c.reply)
+      .forEach((c) => items.push(`Support Reply: ${c.reply}`));
+
+    box.innerHTML = items
+      .map(
+        (txt) =>
+          `<div class="battle-card" style="padding:11px;margin-top:8px;font-size:12px;">${txt}</div>`
+      )
+      .join("");
+  }
+
+  function renderHelp() {
+    const sup = state.config.support || {};
+    const waBadge = document.getElementById("waBadge");
+    const tgBadge = document.getElementById("tgBadge");
+    const lcBadge = document.getElementById("lcBadge");
+
+    if (sup.whatsappEnabled) {
+      waBadge.className = "channel-status-on";
+      waBadge.textContent = "Chat >";
+    } else {
+      waBadge.className = "channel-status-off";
+      waBadge.textContent = "Off >";
+    }
+
+    if (sup.telegramEnabled) {
+      tgBadge.className = "channel-status-on";
+      tgBadge.textContent = "Open >";
+    } else {
+      tgBadge.className = "channel-status-off";
+      tgBadge.textContent = "Off >";
+    }
+
+    if (sup.liveChatEnabled) {
+      lcBadge.className = "channel-status-on";
+      lcBadge.textContent = "Open Chat >";
+    } else {
+      lcBadge.className = "channel-status-off";
+      lcBadge.textContent = "Off >";
+      document.getElementById("liveChatBox").classList.add("hidden");
+    }
+
+    const myChats = (state.supportChats || []).filter((c) => c.userId === currentUser.id);
+    const listEl = document.getElementById("supportChatList");
+    listEl.innerHTML = "";
+    myChats.forEach((c) => {
+      listEl.innerHTML += `
+        <div class="battle-card" style="padding:10px;margin-top:8px;">
+          <div style="font-size:12px;"><strong>Aap:</strong> ${c.text}</div>
+          ${c.reply ? `<div style="font-size:12px;color:var(--gold-1);margin-top:4px;"><strong>Support:</strong> ${c.reply}</div>` : `<div class="muted">Reply ka intezaar...</div>`}
+        </div>
+      `;
+    });
+  }
+
+  function handleChannelClick(channel) {
+    const sup = state.config.support || {};
+    if (channel === "whatsapp") {
+      if (!sup.whatsappEnabled) return alert("WhatsApp support abhi OFF hai.");
+      if (sup.whatsappUrl) window.open(sup.whatsappUrl, "_blank");
+    } else if (channel === "telegram") {
+      if (!sup.telegramEnabled) return alert("Telegram support abhi OFF hai.");
+      if (sup.telegramUrl) window.open(sup.telegramUrl, "_blank");
+    } else if (channel === "livechat") {
+      if (!sup.liveChatEnabled) return alert("Live Chat abhi OFF hai.");
+      document.getElementById("liveChatBox").classList.toggle("hidden");
+    }
+  }
+
+  async function sendSupportMessage() {
+    const message = document.getElementById("supportMsgInput").value.trim();
+    const res = await fetch(`${API}/support/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: currentUser.id, message })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    document.getElementById("supportMsgInput").value = "";
+    await syncState();
+  }
+
+  function renderModes() {
+    const grid = document.getElementById("modesGrid");
+    grid.innerHTML = "";
+    state.config.modes.forEach((m) => {
+      const isLive = m.status === "live";
+      const card = document.createElement("div");
+      card.className = "mode-card" + (isLive ? "" : " locked");
+      card.innerHTML = `
+        <div class="mode-top">
+          <span class="badge ${isLive ? "live" : "soon"}">${isLive ? "● LIVE" : "COMING SOON"}</span>
+        </div>
+        <div class="ludo-emblem">${getModeArt(m.id)}</div>
+        <div class="mode-title">${m.title}</div>
+        <div class="mode-sub">${isLive ? "1v1 Battle Lobby" : "Quick Goti Mode"}</div>
+      `;
+      card.onclick = () => {
+        if (!isLive) return alert("1 Goti Ludo abhi COMING SOON hai.");
+        goTab("lobby", document.getElementById("nav-home"));
+      };
+      grid.appendChild(card);
+    });
+  }
+
+  async function createBattle() {
+    const entryAmount = document.getElementById("entryAmountInput").value;
+    const res = await fetch(`${API}/battles/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: currentUser.id, entryAmount, modeId: "ludo-classic" })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    document.getElementById("entryAmountInput").value = "";
+    await syncState();
+  }
+
+  async function joinBattle(id) {
+    const res = await fetch(`${API}/battles/${id}/join`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: currentUser.id })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    await syncState();
+  }
+
+  async function sendRoomCode(id) {
+    const roomCode = document.getElementById("rc_" + id).value;
+    const res = await fetch(`${API}/battles/${id}/room-code`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ roomCode })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    await syncState();
+  }
+
+  function onResultFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      resultBase64 = reader.result;
+      const img = document.getElementById("resPreview");
+      if (img) {
+        img.src = resultBase64;
+        img.classList.remove("hidden");
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function submitMatchResult(battleId) {
+    if (!resultBase64) return alert("Winner screenshot select karein");
+    const res = await fetch(`${API}/battles/${battleId}/submit-result`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: currentUser.id,
+        outcome: chosenOutcome,
+        screenshotBase64: resultBase64
+      })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    resultBase64 = "";
+    alert("Submit ho gaya. Admin confirm karne ke baad update hoga.");
+    await syncState();
+  }
+
+  function renderLobby() {
+    const openBox = document.getElementById("openBattlesContainer");
+    const myBox = document.getElementById("myMatchesContainer");
+    openBox.innerHTML = "";
+    myBox.innerHTML = "";
+
+    const openList = state.battles.filter((b) => b.status === "open");
+    if (!openList.length) {
+      openBox.innerHTML = `<div class="muted" style="margin-top:10px;">Koi open table nahi hai. Upar amount daalkar table lagayein.</div>`;
+    } else {
+      openList.forEach((b) => {
+        const mine = b.creatorId === currentUser.id;
+        openBox.innerHTML += `
+          <div class="battle-card">
+            <div class="battle-top">
+              <div class="player-block">
+                <div class="avatar-circle">${getInitials(b.creatorName)}</div>
+                <div class="user-meta">
+                  <div class="player-name">${b.creatorName}</div>
+                  <div class="challenge-sub">OPEN CHALLENGE</div>
+                </div>
+              </div>
+              <div class="stakes-block">
+                <div>
+                  <div class="stake-label">ENTRY</div>
+                  <div class="stake-val">₹${b.entry}</div>
+                </div>
+                <div>
+                  <div class="stake-label">PRIZE</div>
+                  <div class="stake-val">₹${b.prize}</div>
+                </div>
+              </div>
+            </div>
+            <div class="battle-action">
+              ${mine
+                ? `<button class="dark" disabled>Aapki Table (Opponent Ka Intezaar)</button>`
+                : `<button class="gold" onclick="joinBattle('${b.id}')">Play Now</button>`}
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    const mineMatches = state.battles.filter(
+      (b) => (b.creatorId === currentUser.id || b.opponentId === currentUser.id) && b.status !== "open"
+    );
+    if (!mineMatches.length) {
+      myBox.innerHTML = `<div class="muted" style="margin-top:8px;">Koi active ya completed match nahi hai.</div>`;
+    } else {
+      mineMatches.forEach((m) => {
+        myBox.innerHTML += `
+          <div class="battle-card">
+            <div class="player-name">${m.creatorName} vs ${m.opponentName || "..."}</div>
+            <div class="muted">Entry: ₹${m.entry} | Prize: ₹${m.prize} | Status: <strong>${m.status}</strong></div>
+            <input id="rc_${m.id}" value="${m.roomCode || ""}" placeholder="Room Code daalein (dono ko dikhega)" />
+            <button class="dark" onclick="sendRoomCode('${m.id}')">Share Room Code</button>
+            ${m.status === "active" ? `
+              <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08);">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                  <button class="gold" onclick="chosenOutcome='win'">Win</button>
+                  <button class="dark" onclick="chosenOutcome='lost'">Lost</button>
+                </div>
+                <input type="file" accept="image/*" onchange="onResultFile(event)" />
+                <img id="resPreview" class="preview hidden" />
+                <button class="gold" onclick="submitMatchResult('${m.id}')">Submit</button>
+              </div>
+            ` : ""}
+          </div>
+        `;
+      });
+    }
+  }
+
+  function onKycFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      kycBase64 = reader.result;
+      const img = document.getElementById("kycPreview");
+      img.src = kycBase64;
+      img.classList.remove("hidden");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function submitKyc() {
+    const kycName = document.getElementById("kycNameInput").value.trim();
+    const res = await fetch(`${API}/kyc/submit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: currentUser.id, kycName, docBase64: kycBase64 })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    kycBase64 = "";
+    alert("KYC document admin ke paas bhej diya gaya hai.");
+    await syncState();
+  }
+
+  async function depositMoney() {
+    const amount = document.getElementById("depositAmountInput").value;
+    const method = document.getElementById("depositMethodInput").value;
+    const res = await fetch(`${API}/wallet/deposit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: currentUser.id, amount, method })
+    });
+    const data = await res.json();
+    if (data.code === "KYC_REQUIRED_FOR_DEPOSIT") {
+      document.getElementById("depositKycBox").classList.remove("hidden");
+      return alert(data.error);
+    }
+    if (data.error) return alert(data.error);
+    document.getElementById("depositAmountInput").value = "";
+    await syncState();
+  }
+
+  async function withdrawMoney() {
+    const amount = document.getElementById("withdrawAmountInput").value;
+    const payoutDetails = document.getElementById("payoutDetailsInput").value;
+    const res = await fetch(`${API}/wallet/withdraw`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: currentUser.id, amount, payoutDetails })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    document.getElementById("withdrawAmountInput").value = "";
+    await syncState();
+  }
+
+  function renderWallet() {
+    const kycBox = document.getElementById("depositKycBox");
+    const kycStatus = currentUser.kyc?.status || "not_submitted";
+    if (kycStatus === "approved") {
+      kycBox.classList.add("hidden");
+    } else {
+      kycBox.classList.remove("hidden");
+      document.getElementById("kycStateMsg").textContent = "Current KYC status: " + kycStatus;
+    }
+
+    const txBox = document.getElementById("txContainer");
+    txBox.innerHTML = "";
+    if (!currentUser.transactions || !currentUser.transactions.length) {
+      txBox.innerHTML = `<div class="muted" style="margin-top:8px;">Abhi koi transaction nahi hai.</div>`;
+    } else {
+      currentUser.transactions.forEach((t) => {
+        txBox.innerHTML += `
+          <div class="tx-item">
+            <span><strong>${t.type}</strong> (${t.status})</span>
+            <span style="color:var(--gold-1);font-weight:700;">₹${t.amount}</span>
+          </div>
+        `;
+      });
+    }
+  }
+
+  async function saveSupportSettings() {
+    const res = await fetch(`${API}/admin/support`, {
+      method: "POST",
+      headers: adminHeaders(),
+      body: JSON.stringify({
+        whatsappEnabled: document.getElementById("admWaToggle").checked,
+        whatsappUrl: document.getElementById("admWaUrl").value.trim(),
+        telegramEnabled: document.getElementById("admTgToggle").checked,
+        telegramUrl: document.getElementById("admTgUrl").value.trim(),
+        liveChatEnabled: document.getElementById("admLcToggle").checked
+      })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    alert("Help channels update ho gaye.");
+    await syncState();
+  }
+
+  async function replySupportChat(msgId) {
+    const reply = document.getElementById("rep_" + msgId).value.trim();
+    const res = await fetch(`${API}/admin/support/reply/${msgId}`, {
+      method: "POST",
+      headers: adminHeaders(),
+      body: JSON.stringify({ reply })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    await syncState();
+  }
+
+  async function updateAdminConfig() {
+    const res = await fetch(`${API}/admin/config`, {
+      method: "POST",
+      headers: adminHeaders(),
+      body: JSON.stringify({
+        notice: document.getElementById("cfgNoticeInput").value,
+        commissionRate: document.getElementById("cfgCommissionInput").value,
+        modeId: document.getElementById("cfgModeId").value,
+        modeStatus: document.getElementById("cfgModeStatus").value
+      })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    await syncState();
+  }
+
+  async function reviewKyc(userId, approve) {
+    const res = await fetch(`${API}/admin/kyc/${userId}/review`, {
+      method: "POST",
+      headers: adminHeaders(),
+      body: JSON.stringify({ approve })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    await syncState();
+  }
+
+  async function confirmResult(battleId, approve) {
+    const res = await fetch(`${API}/admin/battles/${battleId}/confirm`, {
+      method: "POST",
+      headers: adminHeaders(),
+      body: JSON.stringify({ approve })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    await syncState();
+  }
+
+  function renderAdmin() {
+    const loginCard = document.getElementById("adminLoginCard");
+    const panelContent = document.getElementById("adminPanelContent");
+
+    if (!adminToken) {
+      loginCard.classList.remove("hidden");
+      panelContent.classList.add("hidden");
+      return;
+    }
+
+    loginCard.classList.add("hidden");
+    panelContent.classList.remove("hidden");
+
+    const sup = state.config.support || {};
+    document.getElementById("admWaToggle").checked = Boolean(sup.whatsappEnabled);
+    document.getElementById("admWaUrl").value = sup.whatsappUrl || "";
+    document.getElementById("admTgToggle").checked = Boolean(sup.telegramEnabled);
+    document.getElementById("admTgUrl").value = sup.telegramUrl || "";
+    document.getElementById("admLcToggle").checked = Boolean(sup.liveChatEnabled);
+
+    const chatBox = document.getElementById("adminSupportChats");
+    chatBox.innerHTML = "";
+    const chats = state.supportChats || [];
+    if (!chats.length) {
+      chatBox.innerHTML = `<div class="muted" style="margin-top:8px;">Koi user support message nahi hai.</div>`;
+    } else {
+      chats.forEach((c) => {
+        chatBox.innerHTML += `
+          <div class="battle-card">
+            <div class="player-name">${c.userName} (${c.userId})</div>
+            <div style="font-size:12px;margin-top:4px;">Message: ${c.text}</div>
+            <div class="muted">Current Reply: ${c.reply || "—"}</div>
+            <input id="rep_${c.id}" value="${c.reply || ""}" placeholder="Reply likhein..." />
+            <button class="gold" onclick="replySupportChat('${c.id}')">Send Reply</button>
+          </div>
+        `;
+      });
+    }
+
+    const kycBox = document.getElementById("adminKycContainer");
+    kycBox.innerHTML = "";
+    const pendingKyc = state.users.filter((u) => u.kyc && u.kyc.status === "pending");
+    if (!pendingKyc.length) {
+      kycBox.innerHTML = `<div class="muted" style="margin-top:8px;">Koi pending KYC document nahi hai.</div>`;
+    } else {
+      pendingKyc.forEach((u) => {
+        kycBox.innerHTML += `
+          <div class="battle-card">
+            <div class="player-name">${u.name} (${u.phone})</div>
+            <div class="muted">KYC Name: <strong>${u.kyc.kycName}</strong></div>
+            <img class="preview" src="${u.kyc.docUrl}" />
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+              <button class="gold" onclick="reviewKyc('${u.id}', true)">Approve KYC</button>
+              <button class="dark" onclick="reviewKyc('${u.id}', false)">Reject</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    const resBox = document.getElementById("adminResultsContainer");
+    resBox.innerHTML = "";
+    const pendingRes = state.battles.filter((b) => b.status === "pending_admin_approval");
+    if (!pendingRes.length) {
+      resBox.innerHTML = `<div class="muted" style="margin-top:8px;">Koi pending match result nahi hai.</div>`;
+    } else {
+      pendingRes.forEach((b) => {
+        const sub = b.resultSubmission;
+        resBox.innerHTML += `
+          <div class="battle-card">
+            <div class="player-name">${b.creatorName} vs ${b.opponentName}</div>
+            <div class="muted">Claim: ${sub.submittedByName} -> ${sub.outcome.toUpperCase()} | Prize: ₹${b.prize}</div>
+            <img class="preview" src="${sub.screenshotUrl}" />
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+              <button class="gold" onclick="confirmResult('${b.id}', true)">Confirm &amp; Update</button>
+              <button class="dark" onclick="confirmResult('${b.id}', false)">Reject</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+  }
+
+  syncState();
+  startPolling();
+</script>
+</body>
+</html>
